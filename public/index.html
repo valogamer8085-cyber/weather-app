@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether - Premium Weather Forecast Application</title>
+  <meta name="description"
+    content="Smooth, responsive, full-stack weather forecasting web application with glassmorphism UI, 60 FPS canvas particle FX, 24-hour visual temperature curve, 7-day forecast, air quality, and UV index.">
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Outfit:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    crossorigin="anonymous">
+
+  <!-- Application Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/glassmorphism.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+  <!-- 60 FPS HTML5 Canvas Background Particle Engine Layer -->
+  <canvas id="weather-canvas"></canvas>
+
+  <!-- Main Application Container -->
+  <div class="app-container">
+
+    <!-- Top Header Bar -->
+    <header class="header-bar">
+      <div class="brand-logo">
+        <i class="fa-solid fa-cloud-bolt-sun brand-icon"></i>
+        <span>Aether Weather</span>
+      </div>
+
+      <!-- City Search & Geofencing Container -->
+      <div class="search-container">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="search-input" class="glass-input"
+            placeholder="Search city or zip code (e.g. Tokyo, London)..." autocomplete="off">
+          <button type="button" id="geo-btn" class="geo-btn" title="Use current location"
+            aria-label="Use current location">
+            <i class="fa-solid fa-crosshairs" aria-hidden="true"></i>
+            <span class="sr-only">Use current location</span>
+          </button>
+        </div>
+
+        <!-- Autocomplete Suggestions Dropdown -->
+        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+      </div>
+
+      <!-- Header Controls: Unit Toggler -->
+      <div class="header-controls">
+        <div class="unit-toggle-group">
+          <button type="button" id="unit-c" class="unit-btn active">°C</button>
+          <button type="button" id="unit-f" class="unit-btn">°F</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Favorites Chips Bar -->
+    <div id="favorites-bar" class="favorites-bar"></div>
+
+    <!-- Main Content Layout Grid -->
+    <main class="main-grid">
+
+      <!-- Left Column: Current Hero & 24-Hour Hourly Forecast -->
+      <div class="left-column">
+
+        <!-- Current Weather Hero Card -->
+        <section class="glass-card hero-card">
+          <div class="hero-header">
+            <div>
+              <div class="location-title skeleton-target" id="location-name">Tokyo, Japan</div>
+              <div class="location-subtitle">
+                <span>Current Condition</span>
+                <span id="mode-badge" class="mode-badge">Live API</span>
+              </div>
+            </div>
+            <button type="button" id="fav-toggle-btn" class="fav-toggle-btn" title="Toggle Favorite"
+              aria-label="Toggle Favorite">
+              <i class="fa-regular fa-star" aria-hidden="true"></i>
+              <span class="sr-only">Toggle Favorite</span>
+            </button>
+          </div>
+
+          <div class="hero-body">
+            <div class="temp-large skeleton-target">
+              <span id="current-temp">24</span>
+              <span id="temp-unit-label" class="temp-unit">°C</span>
+            </div>
+
+            <div class="condition-box">
+              <div id="hero-condition-icon" class="condition-icon-badge">
+                <i class="fa-solid fa-sun text-amber-400"></i>
+              </div>
+              <div>
+                <div id="condition-text" class="condition-text skeleton-target">Sunny &amp; Clear</div>
+                <div id="feels-like-text" class="condition-subtext skeleton-target">Feels like 23°C • H: 28° L: 19°
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-footer">
+            <div class="hero-metric">
+              <i class="fa-solid fa-droplet"></i>
+              <span>Humidity: <strong id="hero-humidity">58%</strong></span>
+            </div>
+            <div class="hero-metric">
+              <i class="fa-solid fa-wind"></i>
+              <span>Wind: <strong id="hero-wind">14 km/h SW</strong></span>
+            </div>
+            <div class="hero-metric">
+              <i class="fa-solid fa-gauge-high"></i>
+              <span>Pressure: <strong id="hero-pressure">1014 hPa</strong></span>
+            </div>
+            <div class="hero-metric">
+              <i class="fa-solid fa-sun"></i>
+              <span>UV Index: <strong id="hero-uv">UV 6</strong></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 24-Hour Hourly Forecast Section -->
+        <section class="glass-card hourly-card">
+          <h2 class="section-title">
+            <i class="fa-regular fa-clock text-accent"></i>
+            24-Hour Hourly Forecast
+          </h2>
+
+          <!-- Visual Bezier Curve Canvas Chart -->
+          <div class="hourly-chart-container">
+            <canvas id="hourly-canvas"></canvas>
+          </div>
+
+          <!-- Horizontally Scrollable Hourly Cards -->
+          <div id="hourly-scroll-container" class="hourly-scroll-container"></div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: 7-Day Forecast & Detailed Weather Matrix -->
+      <div class="right-column">
+
+        <!-- 7-Day Daily Forecast -->
+        <section class="glass-card daily-card">
+          <h2 class="section-title">
+            <i class="fa-regular fa-calendar-days text-amber"></i>
+            7-Day Forecast
+          </h2>
+          <div id="daily-list" class="daily-list"></div>
+        </section>
+
+        <!-- Detailed Metrics Grid Matrix -->
+        <section class="metrics-grid">
+
+          <!-- Air Quality Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>AIR QUALITY INDEX</span>
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div>
+              <div class="metric-value" id="aqi-value">1</div>
+              <div class="metric-sub font-semibold" id="aqi-level">Good</div>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="aqi-bar-fill" class="progress-bar-fill progress-aqi"></div>
+            </div>
+            <div class="metric-sub" id="aqi-advice">Air quality is satisfactory. Ideal for outdoor activity.</div>
+          </div>
+
+          <!-- UV Index Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>UV INDEX</span>
+              <i class="fa-solid fa-sun"></i>
+            </div>
+            <div>
+              <div class="metric-value" id="uv-value">6</div>
+              <div class="metric-sub">Moderate to High</div>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="uv-bar-fill" class="progress-bar-fill progress-uv"></div>
+            </div>
+            <div class="metric-sub" id="uv-advice">Wear sunglasses &amp; sunscreen on sunny days.</div>
+          </div>
+
+          <!-- Wind & Direction Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>WIND SPEED</span>
+              <i class="fa-solid fa-wind"></i>
+            </div>
+            <div>
+              <div class="metric-value" id="wind-value">14 km/h</div>
+              <div class="metric-sub" id="wind-direction">Direction: SW (220°)</div>
+            </div>
+          </div>
+
+          <!-- Humidity & Dew Point Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>HUMIDITY</span>
+              <i class="fa-solid fa-droplet"></i>
+            </div>
+            <div>
+              <div class="metric-value" id="humidity-value">58%</div>
+              <div class="metric-sub" id="dew-point">Dew point is 15°</div>
+            </div>
+          </div>
+
+          <!-- Sunrise & Sunset Solar Arc Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>SOLAR CYCLE</span>
+              <i class="fa-solid fa-cloud-sun"></i>
+            </div>
+            <div class="solar-header-flex">
+              <div>
+                <span class="solar-label">SUNRISE</span>
+                <div class="font-semibold" id="sunrise-time">06:15 AM</div>
+              </div>
+              <div class="solar-text-right">
+                <span class="solar-label">SUNSET</span>
+                <div class="font-semibold" id="sunset-time">08:30 PM</div>
+              </div>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="sun-arc-fill" class="progress-bar-fill progress-sun-arc"></div>
+            </div>
+          </div>
+
+          <!-- Pressure & Visibility Card -->
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>PRESSURE</span>
+              <i class="fa-solid fa-gauge"></i>
+            </div>
+            <div>
+              <div class="metric-value" id="pressure-value">1014 hPa</div>
+              <div class="metric-sub" id="visibility-value">Visibility: 10 km</div>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>Aether Weather Forecasting Web Application • Designed with Glassmorphism &amp; 60 FPS HTML5 Canvas Engine</p>
+    </footer>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Application Bundle ES Module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

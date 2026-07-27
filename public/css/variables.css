@@ -1,0 +1,59 @@
+/* ==========================================================================
+   Design System Tokens & Theme Variables
+   ========================================================================== */
+
+:root {
+  /* Font Family */
+  --font-family: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-hover: rgba(255, 255, 255, 0.14);
+  --glass-bg-active: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-border-hover: rgba(255, 255, 255, 0.3);
+  --glass-blur: 16px;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+
+  /* Color Palette - Default Dark Sky */
+  --color-bg-primary: #0f172a;
+  --color-bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Accent Colors */
+  --color-accent: #38bdf8;
+  --color-accent-hover: #0284c7;
+  --color-accent-glow: rgba(56, 189, 248, 0.35);
+  --color-amber: #fbbf24;
+  --color-emerald: #10b981;
+  --color-rose: #f43f5e;
+  --color-purple: #c084fc;
+
+  /* Dynamic Weather State Themes */
+  --theme-clear-bg: linear-gradient(135deg, #0c4a6e 0%, #0284c7 40%, #0369a1 100%);
+  --theme-clear-glow: #f59e0b;
+
+  --theme-clouds-bg: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
+  --theme-clouds-glow: #94a3b8;
+
+  --theme-rain-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #172554 100%);
+  --theme-rain-glow: #38bdf8;
+
+  --theme-snow-bg: linear-gradient(135deg, #0c4a6e 0%, #1e293b 50%, #38bdf8 100%);
+  --theme-snow-glow: #e0f2fe;
+
+  --theme-thunder-bg: linear-gradient(135deg, #18092e 0%, #3b0764 50%, #0f172a 100%);
+  --theme-thunder-glow: #a855f7;
+
+  /* Transitions & Spacing */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+}

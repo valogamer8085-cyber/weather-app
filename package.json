@@ -1,0 +1,27 @@
+{
+  "name": "weather-forecast-app",
+  "version": "1.0.0",
+  "description": "Responsive & Smooth Weather Forecasting Web Application with Glassmorphism UI, Canvas Particle FX, Express API & Fallback Engine",
+  "main": "server/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "node --watch server/app.js"
+  },
+  "keywords": [
+    "weather",
+    "forecast",
+    "express",
+    "canvas",
+    "glassmorphism",
+    "aqi",
+    "uv-index"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
