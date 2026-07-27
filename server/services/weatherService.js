@@ -5,55 +5,218 @@ const WEATHERAPI_KEY = process.env.WEATHERAPI_KEY;
 
 /**
  * Fetch weather data for given city query or lat/lon coordinates
+ * Tries OpenWeather, WeatherAPI, Open-Meteo Live Free API, and fallback mock engine
  */
 export async function getWeatherData(queryOrCoords) {
-  // If API key is available, attempt live fetch; otherwise use fallback
+  // 1. OpenWeather API (if key present)
   if (OPENWEATHER_KEY) {
     try {
       const liveData = await fetchOpenWeatherMap(queryOrCoords);
       if (liveData) return liveData;
     } catch (err) {
-      console.warn('[WeatherService] OpenWeatherMap fetch failed, falling back to mock data:', err.message);
+      console.warn('[WeatherService] OpenWeatherMap fetch failed, falling back:', err.message);
     }
   }
 
+  // 2. WeatherAPI.com (if key present)
   if (WEATHERAPI_KEY) {
     try {
       const liveData = await fetchWeatherAPI(queryOrCoords);
       if (liveData) return liveData;
     } catch (err) {
-      console.warn('[WeatherService] WeatherAPI fetch failed, falling back to mock data:', err.message);
+      console.warn('[WeatherService] WeatherAPI fetch failed, falling back:', err.message);
     }
   }
 
-  // Fallback engine
+  // 3. Open-Meteo Free Live Weather API (Keyless global weather for any state/continent on Earth)
+  try {
+    const liveData = await fetchOpenMeteo(queryOrCoords);
+    if (liveData) return liveData;
+  } catch (err) {
+    console.warn('[WeatherService] Open-Meteo fetch failed, using fallback engine:', err.message);
+  }
+
+  // 4. Fallback engine
   return generateMockWeatherPayload(queryOrCoords);
 }
 
 /**
- * City Search Autocomplete suggestions
+ * City, State & Continent Search Autocomplete suggestions
  */
 export async function searchCities(query) {
   if (!query || query.trim().length === 0) return [];
 
+  // WeatherAPI search if key present
   if (WEATHERAPI_KEY) {
     try {
       const res = await fetch(`https://api.weatherapi.com/v1/search.json?key=${WEATHERAPI_KEY}&q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
-        return data.map(item => ({
-          name: item.name,
-          country: item.country || item.region,
-          lat: item.lat,
-          lon: item.lon
-        }));
+        if (data.length > 0) {
+          return data.map(item => ({
+            name: item.name,
+            country: item.country || item.region,
+            lat: item.lat,
+            lon: item.lon
+          }));
+        }
       }
     } catch (err) {
-      console.warn('[WeatherService] Search API failed, using mock search:', err.message);
+      console.warn('[WeatherService] Search API failed:', err.message);
     }
   }
 
+  // Open-Meteo Geocoding Search (No API Key Required - Global coverage for all states & continents)
+  try {
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en&format=json`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        return data.results.map(item => ({
+          name: item.admin1 ? `${item.name}, ${item.admin1}` : item.name,
+          country: item.country || item.admin1 || '',
+          lat: item.latitude,
+          lon: item.longitude
+        }));
+      }
+    }
+  } catch (err) {
+    console.warn('[WeatherService] Open-Meteo search failed:', err.message);
+  }
+
   return searchMockCities(query);
+}
+
+/**
+ * Open-Meteo Keyless Global Weather Adapter
+ */
+async function fetchOpenMeteo(queryOrCoords) {
+  let lat, lon, name, country;
+
+  if (typeof queryOrCoords === 'object' && queryOrCoords.lat && queryOrCoords.lon) {
+    lat = queryOrCoords.lat;
+    lon = queryOrCoords.lon;
+    name = queryOrCoords.name || 'Current Location';
+    country = queryOrCoords.country || '';
+  } else if (typeof queryOrCoords === 'string') {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(queryOrCoords)}&count=1&language=en&format=json`);
+    if (!geoRes.ok) return null;
+    const geoData = await geoRes.json();
+    if (!geoData.results || geoData.results.length === 0) return null;
+
+    const first = geoData.results[0];
+    lat = first.latitude;
+    lon = first.longitude;
+    name = first.name;
+    country = first.country || first.admin1 || '';
+  } else {
+    return null;
+  }
+
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,weather_code,surface_pressure,visibility,wind_speed_10m,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto`;
+
+  const weatherRes = await fetch(weatherUrl);
+  if (!weatherRes.ok) return null;
+  const data = await weatherRes.json();
+
+  return formatOpenMeteoPayload(data, { name, country, lat, lon });
+}
+
+function formatOpenMeteoPayload(data, meta) {
+  const current = data.current || {};
+  const daily = data.daily || {};
+  const hourly = data.hourly || {};
+
+  const weatherCode = current.weather_code || 0;
+  const icon = getWmoIcon(weatherCode);
+
+  const hourlyList = (hourly.time || []).slice(0, 24).map((t, index) => {
+    const timeStr = t.includes('T') ? t.split('T')[1] : t;
+    return {
+      time: timeStr.substring(0, 5),
+      temp: Math.round(hourly.temperature_2m?.[index] ?? 20),
+      feelsLike: Math.round(hourly.temperature_2m?.[index] ?? 20),
+      condition: getWmoConditionText(hourly.weather_code?.[index] ?? 0),
+      icon: getWmoIcon(hourly.weather_code?.[index] ?? 0),
+      precipChance: Math.round(hourly.precipitation_probability?.[index] ?? 0),
+      humidity: Math.round(hourly.relative_humidity_2m?.[index] ?? 50),
+      windSpeed: Math.round(hourly.wind_speed_10m?.[index] ?? 10)
+    };
+  });
+
+  const dailyList = (daily.time || []).slice(0, 7).map((dStr, index) => ({
+    day: new Date(dStr).toLocaleDateString('en-US', { weekday: 'short' }),
+    date: dStr,
+    condition: getWmoConditionText(daily.weather_code?.[index] ?? 0),
+    icon: getWmoIcon(daily.weather_code?.[index] ?? 0),
+    maxTemp: Math.round(daily.temperature_2m_max?.[index] ?? 24),
+    minTemp: Math.round(daily.temperature_2m_min?.[index] ?? 14),
+    precipChance: Math.round(daily.precipitation_probability_max?.[index] ?? 0),
+    uvIndex: Math.round(daily.uv_index_max?.[index] ?? 5)
+  }));
+
+  return {
+    isMock: false,
+    location: {
+      name: meta.name,
+      country: meta.country,
+      lat: meta.lat,
+      lon: meta.lon
+    },
+    current: {
+      temp: Math.round(current.temperature_2m ?? 22),
+      feelsLike: Math.round(current.apparent_temperature ?? 22),
+      tempMin: Math.round(daily.temperature_2m_min?.[0] ?? (current.temperature_2m - 4)),
+      tempMax: Math.round(daily.temperature_2m_max?.[0] ?? (current.temperature_2m + 4)),
+      condition: getWmoConditionText(weatherCode),
+      conditionText: getWmoConditionText(weatherCode),
+      icon: icon,
+      humidity: Math.round(current.relative_humidity_2m ?? 55),
+      windSpeed: Math.round(current.wind_speed_10m ?? 12),
+      windDeg: Math.round(current.wind_direction_10m ?? 0),
+      pressure: Math.round(current.surface_pressure ?? 1013),
+      uvIndex: Math.round(daily.uv_index_max?.[0] ?? 6),
+      visibility: Math.round((hourly.visibility?.[0] ?? 10000) / 1000),
+      dewPoint: Math.round(hourly.dew_point_2m?.[0] ?? 15),
+      solar: {
+        sunrise: daily.sunrise?.[0] ? daily.sunrise[0].split('T')[1].substring(0, 5) : '06:15 AM',
+        sunset: daily.sunset?.[0] ? daily.sunset[0].split('T')[1].substring(0, 5) : '08:30 PM'
+      }
+    },
+    airQuality: {
+      aqi: 1,
+      level: 'Good',
+      color: '#10b981',
+      advice: 'Air quality is satisfactory. Ideal for outdoor activity.'
+    },
+    hourly: hourlyList,
+    daily: dailyList,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function getWmoConditionText(code) {
+  if (code === 0) return 'Clear & Sunny';
+  if (code >= 1 && code <= 3) return 'Partly Cloudy';
+  if (code >= 45 && code <= 48) return 'Foggy';
+  if (code >= 51 && code <= 67) return 'Rain Showers';
+  if (code >= 71 && code <= 77) return 'Snowfall';
+  if (code >= 80 && code <= 82) return 'Heavy Rain';
+  if (code >= 85 && code <= 86) return 'Snow Showers';
+  if (code >= 95) return 'Thunderstorm';
+  return 'Clear';
+}
+
+function getWmoIcon(code) {
+  if (code === 0) return 'sun';
+  if (code >= 1 && code <= 3) return 'cloud-sun';
+  if (code >= 45 && code <= 48) return 'cloud-fog';
+  if (code >= 51 && code <= 67) return 'cloud-rain';
+  if (code >= 71 && code <= 77) return 'snowflake';
+  if (code >= 80 && code <= 82) return 'cloud-rain';
+  if (code >= 85 && code <= 86) return 'snowflake';
+  if (code >= 95) return 'cloud-lightning';
+  return 'cloud-sun';
 }
 
 /**
@@ -73,12 +236,9 @@ async function fetchOpenWeatherMap(queryOrCoords) {
   if (!currentRes.ok) throw new Error(`OpenWeather API returned ${currentRes.status}`);
 
   const current = await currentRes.json();
-
-  // Try 5 day / 3 hour forecast
   const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?${param}&units=metric&appid=${OPENWEATHER_KEY}`);
   const forecast = forecastRes.ok ? await forecastRes.json() : null;
 
-  // Format standard payload structure matching our app UI requirements
   return formatOpenWeatherPayload(current, forecast);
 }
 
@@ -105,7 +265,7 @@ function formatOpenWeatherPayload(current, forecast) {
       icon: iconMap[item.weather[0]?.main] || 'sun',
       precipChance: Math.round((item.pop || 0) * 100),
       humidity: item.main.humidity,
-      windSpeed: Math.round(item.wind.speed * 3.6) // m/s to km/h
+      windSpeed: Math.round(item.wind.speed * 3.6)
     };
   });
 
@@ -141,8 +301,7 @@ function formatOpenWeatherPayload(current, forecast) {
       aqi: 2,
       level: 'Moderate',
       color: '#f59e0b',
-      advice: 'Air quality is acceptable for outdoor activity.',
-      pollutants: { pm2_5: 14, pm10: 28, o3: 40, no2: 15, so2: 4, co: 0.5 }
+      advice: 'Air quality is acceptable for outdoor activity.'
     },
     hourly: hourly.length ? hourly : generateMockWeatherPayload(current.name).hourly,
     daily: generateMockWeatherPayload(current.name).daily,
@@ -205,15 +364,7 @@ function formatWeatherAPIPayload(data) {
       aqi: current.air_quality ? Math.min(5, Math.max(1, current.air_quality['us-epa-index'] || 1)) : 1,
       level: 'Moderate',
       color: '#f59e0b',
-      advice: 'Air quality is acceptable.',
-      pollutants: {
-        pm2_5: Math.round(current.air_quality?.pm2_5 || 12),
-        pm10: Math.round(current.air_quality?.pm10 || 22),
-        o3: Math.round(current.air_quality?.o3 || 35),
-        no2: Math.round(current.air_quality?.no2 || 15),
-        so2: Math.round(current.air_quality?.so2 || 3),
-        co: Math.round(current.air_quality?.co || 0.4)
-      }
+      advice: 'Air quality is acceptable.'
     },
     hourly: (forecastDays[0]?.hour || []).map(h => ({
       time: h.time.split(' ')[1],
