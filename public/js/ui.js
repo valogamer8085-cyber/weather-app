@@ -13,6 +13,31 @@ export class UIRenderer {
       this.toastContainer.id = 'toast-container';
       document.body.appendChild(this.toastContainer);
     }
+
+    this.bindRippleEffects();
+  }
+
+  bindRippleEffects() {
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('button, .favorite-chip, .weather-pill, .autocomplete-item');
+      if (!btn) return;
+
+      const circle = document.createElement('span');
+      const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+      const radius = diameter / 2;
+
+      const rect = btn.getBoundingClientRect();
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${e.clientX - rect.left - radius}px`;
+      circle.style.top = `${e.clientY - rect.top - radius}px`;
+      circle.classList.add('ripple');
+
+      const existingRipple = btn.querySelector('.ripple');
+      if (existingRipple) existingRipple.remove();
+
+      btn.appendChild(circle);
+      setTimeout(() => circle.remove(), 600);
+    });
   }
 
   setUnit(unit) {
@@ -104,6 +129,9 @@ export class UIRenderer {
 
     const { location, current, airQuality, hourly, daily, isMock, isCustom, customLabel } = data;
 
+    // Dynamically update background weather state theme
+    this.updateBodyTheme(current.condition);
+
     // Render Hero Card
     document.getElementById('location-name').textContent = location.country ? `${location.name}, ${location.country}` : location.name;
     document.getElementById('mode-badge').textContent = isCustom ? (customLabel || 'Custom Simulation') : (isMock ? 'Mock Fallback Engine' : 'Live Weather API');
@@ -137,8 +165,35 @@ export class UIRenderer {
     // Render Matrix Metrics (AQI, UV, Wind, Solar Arc)
     this.renderMetrics(current, airQuality);
 
+    // Trigger smooth fade-in-up animation on main layout
+    const mainGrid = document.querySelector('.main-grid');
+    if (mainGrid) {
+      mainGrid.classList.remove('fade-in-up');
+      void mainGrid.offsetWidth; // Force reflow
+      mainGrid.classList.add('fade-in-up');
+    }
+
     // Dispatch weather change event for Canvas particle engine
     window.dispatchEvent(new CustomEvent('weather-change', { detail: current.condition }));
+  }
+
+  updateBodyTheme(condition) {
+    document.body.classList.remove('weather-clear', 'weather-clouds', 'weather-rain', 'weather-snow', 'weather-thunderstorm', 'weather-fog');
+    const condKey = (condition || '').toLowerCase();
+
+    if (condKey.includes('clear') || condKey.includes('sun')) {
+      document.body.classList.add('weather-clear');
+    } else if (condKey.includes('rain') || condKey.includes('drizzle')) {
+      document.body.classList.add('weather-rain');
+    } else if (condKey.includes('snow') || condKey.includes('ice') || condKey.includes('flurry')) {
+      document.body.classList.add('weather-snow');
+    } else if (condKey.includes('thunder') || condKey.includes('storm')) {
+      document.body.classList.add('weather-thunderstorm');
+    } else if (condKey.includes('fog') || condKey.includes('smog') || condKey.includes('mist')) {
+      document.body.classList.add('weather-fog');
+    } else {
+      document.body.classList.add('weather-clouds');
+    }
   }
 
   renderHourly(hourlyData) {

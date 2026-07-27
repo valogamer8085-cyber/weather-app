@@ -6,15 +6,15 @@
   /* Font Family */
   --font-family: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-bg-hover: rgba(255, 255, 255, 0.14);
+  /* Glassmorphism System Variables */
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-hover: rgba(255, 255, 255, 0.13);
   --glass-bg-active: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-border-hover: rgba(255, 255, 255, 0.3);
-  --glass-blur: 16px;
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-hover: rgba(255, 255, 255, 0.32);
+  --glass-blur: 20px;
+  --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
 
   /* Color Palette - Default Dark Sky */
   --color-bg-primary: #0f172a;
@@ -25,35 +25,47 @@
 
   /* Accent Colors */
   --color-accent: #38bdf8;
+  --color-accent-blue: #0284c7;
   --color-accent-hover: #0284c7;
-  --color-accent-glow: rgba(56, 189, 248, 0.35);
+  --color-accent-glow: rgba(56, 189, 248, 0.4);
   --color-amber: #fbbf24;
   --color-emerald: #10b981;
   --color-rose: #f43f5e;
   --color-purple: #c084fc;
 
-  /* Dynamic Weather State Themes */
-  --theme-clear-bg: linear-gradient(135deg, #0c4a6e 0%, #0284c7 40%, #0369a1 100%);
-  --theme-clear-glow: #f59e0b;
+  /* Dynamic Weather Background Theme Profiles */
+  --theme-clear-bg: linear-gradient(135deg, #0c4a6e 0%, #0284c7 40%, #0f172a 100%);
+  --theme-clear-glow: rgba(245, 158, 11, 0.25);
 
   --theme-clouds-bg: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
-  --theme-clouds-glow: #94a3b8;
+  --theme-clouds-glow: rgba(148, 163, 184, 0.2);
 
   --theme-rain-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #172554 100%);
-  --theme-rain-glow: #38bdf8;
+  --theme-rain-glow: rgba(56, 189, 248, 0.3);
 
   --theme-snow-bg: linear-gradient(135deg, #0c4a6e 0%, #1e293b 50%, #38bdf8 100%);
-  --theme-snow-glow: #e0f2fe;
+  --theme-snow-glow: rgba(224, 242, 254, 0.35);
 
   --theme-thunder-bg: linear-gradient(135deg, #18092e 0%, #3b0764 50%, #0f172a 100%);
-  --theme-thunder-glow: #a855f7;
+  --theme-thunder-glow: rgba(168, 85, 247, 0.4);
 
-  /* Transitions & Spacing */
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-fog-bg: linear-gradient(135deg, #1e293b 0%, #475569 50%, #0f172a 100%);
+  --theme-fog-glow: rgba(148, 163, 184, 0.25);
+
+  /* Silky 60 FPS Transitions & Easing Curves */
+  --transition-fast: 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-normal: 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-slow: 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Border Radii */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 9999px;
+
+  /* Fluid Typography Clamps */
+  --font-fluid-hero: clamp(3rem, 6.5vw, 5.5rem);
+  --font-fluid-title: clamp(1.4rem, 3.2vw, 2.25rem);
+  --font-fluid-brand: clamp(1.15rem, 2.4vw, 1.5rem);
 }

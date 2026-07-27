@@ -136,16 +136,35 @@ export class WeatherCanvasEngine {
 
   renderSolarGlow() {
     const ctx = this.ctx;
-    const centerX = this.width * 0.8;
-    const centerY = this.height * 0.2;
+    const centerX = this.width * 0.82;
+    const centerY = this.height * 0.18;
+    const now = performance.now() * 0.0008;
 
-    const gradient = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, 400);
-    gradient.addColorStop(0, 'rgba(251, 191, 36, 0.25)');
-    gradient.addColorStop(0.5, 'rgba(245, 158, 11, 0.08)');
+    // Ambient radial sun glow
+    const gradient = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, Math.max(this.width, this.height) * 0.6);
+    gradient.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
+    gradient.addColorStop(0.4, 'rgba(245, 158, 11, 0.09)');
     gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, this.width, this.height);
+
+    // Dynamic 60 FPS Sun Rays
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(now * 0.05);
+
+    const rayCount = 8;
+    ctx.fillStyle = 'rgba(253, 230, 138, 0.04)';
+    for (let i = 0; i < rayCount; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      const angle = (i * Math.PI * 2) / rayCount + Math.sin(now + i) * 0.05;
+      ctx.arc(0, 0, Math.max(this.width, this.height) * 0.75, angle, angle + 0.18);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
   }
 
   renderClouds() {
