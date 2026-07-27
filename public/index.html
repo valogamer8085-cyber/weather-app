@@ -3,10 +3,17 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aether - Premium Weather Forecast Application</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Aether - Android Weather Application</title>
   <meta name="description"
-    content="Smooth, responsive, full-stack weather forecasting web application with glassmorphism UI, 60 FPS canvas particle FX, 24-hour visual temperature curve, 7-day forecast, air quality, and UV index.">
+    content="Smooth, responsive, full-stack weather forecasting application optimized for Android mobile devices with glassmorphism UI, 60 FPS canvas particle FX, 24-hour visual temperature curve, 7-day forecast, air quality, and UV index.">
+
+  <!-- Android & Mobile Web App Meta & Manifest -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
 
   <!-- Google Fonts: Outfit & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,8 +64,13 @@
         <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
       </div>
 
-      <!-- Header Controls: Unit Toggler -->
+      <!-- Header Controls: Unit Toggler & Android App Install -->
       <div class="header-controls">
+        <button type="button" id="android-install-btn" class="android-install-btn" title="Install Android App" style="display: none;">
+          <i class="fa-brands fa-android text-emerald-400"></i>
+          <span>Install App</span>
+        </button>
+
         <div class="unit-toggle-group">
           <button type="button" id="unit-c" class="unit-btn active">°C</button>
           <button type="button" id="unit-f" class="unit-btn">°F</button>

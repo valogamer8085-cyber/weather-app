@@ -3,6 +3,7 @@ import { UIRenderer } from './ui.js';
 import { SearchController } from './search.js';
 import { WeatherCanvasEngine } from './weatherCanvas.js';
 import { WeatherOptionsController } from './weatherOptions.js';
+import { AndroidAppController } from './androidInstall.js';
 
 class WeatherApp {
   constructor() {
@@ -15,6 +16,7 @@ class WeatherApp {
     );
 
     this.options = new WeatherOptionsController(this.ui, this);
+    this.android = new AndroidAppController(this.ui);
     this.lastQuery = null;
 
     this.init();
