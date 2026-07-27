@@ -2,6 +2,7 @@ import { fetchWeather } from './api.js';
 import { UIRenderer } from './ui.js';
 import { SearchController } from './search.js';
 import { WeatherCanvasEngine } from './weatherCanvas.js';
+import { WeatherOptionsController } from './weatherOptions.js';
 
 class WeatherApp {
   constructor() {
@@ -12,6 +13,9 @@ class WeatherApp {
       (city) => this.loadWeather(city),
       (coords) => this.loadWeather(coords)
     );
+
+    this.options = new WeatherOptionsController(this.ui, this);
+    this.lastQuery = null;
 
     this.init();
   }
@@ -69,24 +73,35 @@ class WeatherApp {
       this.canvasEngine.setCondition(e.detail);
     });
 
-    // Window Resize Handler for Hourly Curve Chart
-    window.addEventListener('resize', () => {
+    // Window Resize & Orientation Change Handler for Aspect Ratio Switching (Mobile & Computer)
+    const handleAspectResize = () => {
+      if (this.canvasEngine) {
+        this.canvasEngine.resizeCanvas();
+      }
       if (this.ui.currentData?.hourly) {
         this.ui.renderHourly(this.ui.currentData.hourly);
       }
+    };
+
+    window.addEventListener('resize', handleAspectResize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleAspectResize, 150);
     });
   }
 
   async loadWeather(queryOrCoords) {
     this.ui.showSkeleton();
+    if (this.options) this.options.clearActivePills();
 
     try {
       const data = await fetchWeather(queryOrCoords);
       this.ui.renderAll(data);
 
       if (typeof queryOrCoords === 'string') {
+        this.lastQuery = queryOrCoords;
         localStorage.setItem('last_weather_location', queryOrCoords);
       } else if (data.location?.name) {
+        this.lastQuery = data.location.name;
         localStorage.setItem('last_weather_location', data.location.name);
       }
     } catch (err) {

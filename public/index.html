@@ -69,6 +69,39 @@
     <!-- Favorites Chips Bar -->
     <div id="favorites-bar" class="favorites-bar"></div>
 
+    <!-- Global Weather & Area Options Control System -->
+    <div class="options-bar glass-card">
+      <div class="options-group">
+        <label for="region-state-select" class="options-label">
+          <i class="fa-solid fa-map-location-dot"></i> Area / State:
+        </label>
+        <select id="region-state-select" class="glass-select" aria-label="Select Area or State Preset">
+          <option value="">🌐 Select State / Region Preset...</option>
+        </select>
+      </div>
+
+      <div class="options-group weather-pills-group">
+        <span class="options-label"><i class="fa-solid fa-sliders"></i> Condition:</span>
+        <div class="weather-pills-container">
+          <button type="button" class="weather-pill" data-condition="Clear">☀️ Sunny</button>
+          <button type="button" class="weather-pill" data-condition="Rain">🌧️ Rain</button>
+          <button type="button" class="weather-pill" data-condition="Snow">❄️ Snow</button>
+          <button type="button" class="weather-pill" data-condition="Thunderstorm">⚡ Storm</button>
+          <button type="button" class="weather-pill" data-condition="Clouds">☁️ Clouds</button>
+          <button type="button" class="weather-pill" data-condition="Fog">🌫️ Fog</button>
+        </div>
+      </div>
+
+      <div class="options-group actions-group">
+        <button type="button" id="open-studio-btn" class="studio-btn" title="Open Custom Weather Studio">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Weather Studio
+        </button>
+        <button type="button" id="reset-weather-btn" class="reset-btn" title="Reset to Live Weather API">
+          <i class="fa-solid fa-rotate-left"></i> Live API
+        </button>
+      </div>
+    </div>
+
     <!-- Main Content Layout Grid -->
     <main class="main-grid">
 
@@ -263,6 +296,71 @@
       <p>Aether Weather Forecasting Web Application • Designed with Glassmorphism &amp; 60 FPS HTML5 Canvas Engine</p>
     </footer>
 
+  </div>
+
+  <!-- Custom Weather Studio Modal -->
+  <div id="weather-studio-modal" class="modal-overlay">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles text-accent"></i> Custom Weather Studio</h3>
+        <button type="button" id="close-studio-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <p class="modal-subtitle">Customize and simulate any weather environment, temperature, and condition for any state or area.</p>
+
+      <form id="weather-studio-form" class="studio-form">
+        <div class="form-group">
+          <label for="studio-area-name">State / Area Name</label>
+          <input type="text" id="studio-area-name" class="glass-input" placeholder="e.g. California, Tokyo, London..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="studio-condition">Weather Atmosphere Condition</label>
+          <select id="studio-condition" class="glass-select">
+            <option value="Clear">☀️ Clear / Sunny</option>
+            <option value="Rain">🌧️ Heavy Rain Showers</option>
+            <option value="Snow">❄️ Blizzard / Snow</option>
+            <option value="Thunderstorm">⚡ Severe Thunderstorm</option>
+            <option value="Clouds">☁️ Overcast Clouds</option>
+            <option value="Fog">🌫️ Thick Smog &amp; Fog</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="slider-header">
+            <label for="studio-temp">Temperature (°C)</label>
+            <span id="studio-temp-val" class="slider-val">22°C</span>
+          </div>
+          <input type="range" id="studio-temp" min="-20" max="50" value="22" class="glass-range">
+        </div>
+
+        <div class="form-group">
+          <div class="slider-header">
+            <label for="studio-wind">Wind Speed (km/h)</label>
+            <span id="studio-wind-val" class="slider-val">15 km/h</span>
+          </div>
+          <input type="range" id="studio-wind" min="0" max="100" value="15" class="glass-range">
+        </div>
+
+        <div class="form-group">
+          <div class="slider-header">
+            <label for="studio-humidity">Humidity (%)</label>
+            <span id="studio-humidity-val" class="slider-val">50%</span>
+          </div>
+          <input type="range" id="studio-humidity" min="0" max="100" value="50" class="glass-range">
+        </div>
+
+        <div class="form-group">
+          <label for="studio-uv">UV Index (0 - 12)</label>
+          <input type="number" id="studio-uv" min="0" max="12" value="5" class="glass-input">
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="studio-apply-btn">
+            <i class="fa-solid fa-play"></i> Apply Simulation
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Toast Notification Container -->

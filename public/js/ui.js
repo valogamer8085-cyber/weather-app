@@ -102,11 +102,11 @@ export class UIRenderer {
     this.currentData = data;
     this.hideSkeleton();
 
-    const { location, current, airQuality, hourly, daily, isMock } = data;
+    const { location, current, airQuality, hourly, daily, isMock, isCustom, customLabel } = data;
 
     // Render Hero Card
-    document.getElementById('location-name').textContent = `${location.name}, ${location.country}`;
-    document.getElementById('mode-badge').textContent = isMock ? 'Mock Fallback Engine' : 'Live Weather API';
+    document.getElementById('location-name').textContent = location.country ? `${location.name}, ${location.country}` : location.name;
+    document.getElementById('mode-badge').textContent = isCustom ? (customLabel || 'Custom Simulation') : (isMock ? 'Mock Fallback Engine' : 'Live Weather API');
     document.getElementById('current-temp').textContent = this.convertTemp(current.temp);
     document.getElementById('temp-unit-label').textContent = `°${this.unit}`;
     document.getElementById('condition-text').textContent = current.conditionText;
